@@ -1,0 +1,43 @@
+Decl ::= Identifier "proc" "(" [VarDecl] ")" "{" [Exp] "}" ;
+
+[]. VarDecl ::= ;
+(:). VarDecl ::= Identifier "," [VarDecl] ;
+
+[]. Exp ::= ;
+(:) Exp ::= Exp ";" [Exp] ;
+
+Exp ::= Number ;
+Exp ::= Set ;
+Exp ::= Constant ;
+Exp ::= Bool
+Exp ::= Set "union" Set ;
+Exp ::= Set "intersect" Set ;
+Exp ::= Set "/" Set ;
+Exp ::= Exp "in" Set ;
+Exp ::= Exp "and" Exp
+Exp ::= Exp "or" Exp
+Exp ::= "~" Bool 
+Exp ::= Exp "<" Exp ;
+Exp ::= Exp ">" Exp ;
+Exp ::= Exp "<=" Exp ;
+Exp ::= Exp ">=" Exp ;
+Exp ::= Exp "=" Exp ;
+Exp ::= Exp "/=" Exp ;
+Exp ::= Exp "=>" Exp ;
+
+Set ::= "{" [Number] "}" ;
+[]. Number ::= ;
+(:). Number ::= Number "," [Number] ;
+
+Number ::= Integer ;
+Number ::= Double ;
+Number ::= Complex ;
+Number ::= Real ;
+Number ::= Rational ;
+
+Bool ::= "true" ;
+Bool ::= "false";
+
+Constant ::= "i"
+Constant ::= "e"
+Constant ::= "pi"
