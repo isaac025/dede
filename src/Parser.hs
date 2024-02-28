@@ -134,7 +134,7 @@ primary =
         , (match [Tr], pure (Lit (LBool True)))
         , (match [Identifier], pure (Lit (LVar Identifier)))
         , (match [Number], buildNumber)
-        , (match [LBrace], advance >> buildSet)
+        , (match [LBrace], buildSet)
         ]
 
 buildNumber :: ParserM Expr
@@ -148,12 +148,13 @@ buildSet = do
     loop :: [Literal] -> ParserM [Literal]
     loop xs =
         condM
-            [ (match [Tr, Fls], loop (xs ++ [toLit x]))
+            [ (match [Tr, Fls], previous >>= \x -> loop (xs ++ [toLit (tType x)]))
             , (match [RBrace], pure xs)
-            , (match [Comma], advance >> loop xs)
+            , (match [Comma], loop xs)
             ]
-    toLit :: Expr -> Literal
-    toLit (Lit l) = l
+    toLit :: TokenType -> Literal
+    toLit Tr = LBool True
+    toLit Fls = LBool False
 
 consume :: TokenType -> ParserM Token
 consume tt = ifM (check tt) advance (error "Unexpected token")
