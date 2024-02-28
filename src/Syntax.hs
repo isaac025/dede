@@ -11,8 +11,7 @@ data Expr
 
 data Literal
     = LBool Bool
-    | LInt Integer
-    | LDoub Double
+    | LNum TokenType
     | LVar TokenType
     | LSet (Set Literal)
     deriving (Show, Eq, Ord)
