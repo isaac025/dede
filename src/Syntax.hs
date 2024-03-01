@@ -1,6 +1,7 @@
 module Syntax where
 
 import Data.Set (Set)
+import Data.Text (Text)
 import Token (TokenType (..))
 
 data Expr
@@ -11,7 +12,9 @@ data Expr
 
 data Literal
     = LBool Bool
-    | LNum TokenType
-    | LVar TokenType
+    | LInt Integer
+    | LDouble Double
+    | LRatio Rational
+    | LVar Text
     | LSet (Set Literal)
     deriving (Show, Eq, Ord)

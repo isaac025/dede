@@ -36,7 +36,7 @@ runPrompt = loop
         l <- getLine
         unless (l == "quit") $ do
             let (_, s) = runScan (initScanner l) scanTokens
-                p = runParser parse (initParser (sTokens s))
+            let p = runParser parse (initParser (sTokens s))
             case p of
                 Left _ -> putStrLn "error Parsing" >> exitFailure
                 Right e -> print e >> loop

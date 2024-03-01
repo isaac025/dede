@@ -5,6 +5,7 @@ import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.State
 import Data.Set (fromList)
+import Data.Text (unpack)
 import Syntax
 import Token
 
@@ -132,14 +133,26 @@ primary =
     condM
         [ (match [Fls], pure (Lit (LBool False)))
         , (match [Tr], pure (Lit (LBool True)))
-        , (match [Identifier], pure (Lit (LVar Identifier)))
+        , (match [Identifier], previous >>= \x -> pure (Lit (LVar (tLexeme x))))
         , (match [Number], buildNumber)
         , (match [LBrace], buildSet)
         ]
 
 buildNumber :: ParserM Expr
-buildNumber = undefined
-
+buildNumber = do
+    p <- unpack . tLexeme <$> previous
+    ifM
+        (match [Percent])
+        (buildRatio p)
+        (completeNumber p)
+  where
+    completeNumber v =
+        if '.' `elem` v
+            then pure $ Lit (LDouble (read @Double v))
+            else pure $ Lit (LInt (read @Integer v))
+    buildRatio v = do
+        w <- unpack . tLexeme <$> advance
+        pure $ Lit (LRatio (read @Rational (v ++ " % " ++ w)))
 buildSet :: ParserM Expr
 buildSet = do
     e <- loop []
@@ -148,13 +161,17 @@ buildSet = do
     loop :: [Literal] -> ParserM [Literal]
     loop xs =
         condM
-            [ (match [Tr, Fls], previous >>= \x -> loop (xs ++ [toLit (tType x)]))
+            [ (match [Tr, Fls], previous >>= \x -> loop (toLit x : xs))
             , (match [RBrace], pure xs)
+            , (match [Identifier], previous >>= \x -> loop (toLit x : xs))
             , (match [Comma], loop xs)
             ]
-    toLit :: TokenType -> Literal
-    toLit Tr = LBool True
-    toLit Fls = LBool False
+    toLit :: Token -> Literal
+    toLit x =
+        case tType x of
+            Tr -> LBool True
+            Fls -> LBool False
+            Identifier -> LVar (tLexeme x)
 
 consume :: TokenType -> ParserM Token
 consume tt = ifM (check tt) advance (error "Unexpected token")

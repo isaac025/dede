@@ -12,10 +12,10 @@ data TokenType
     | Dot
     | Minus
     | Plus
+    | Percent
     | SemiColon
     | Star
     | Tilde
-    | Percent
     | Pound
     | -- One or two char tokens
       Eq

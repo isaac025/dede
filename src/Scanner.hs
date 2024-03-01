@@ -95,6 +95,7 @@ scanToken = do
         '.' -> addToken Dot
         '-' -> addToken Minus
         '+' -> addToken Plus
+        '%' -> addToken Percent
         ';' -> addToken SemiColon
         '*' -> addToken Star
         '=' -> ifM (match '>') (addToken EqGreater) (addToken Eq)
@@ -176,7 +177,7 @@ number =
     munchChars isDigit >> do
         p <- peek
         pn <- peekNext
-        if (p == '.' || p == '%') && isDigit pn
+        if p == '.' && isDigit pn
             then advance >> munchChars isDigit >> addToken Number
             else addToken Number
 
