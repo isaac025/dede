@@ -9,6 +9,7 @@ data TokenType
     | LBrace
     | RBrace
     | Comma
+    | Caret
     | Dot
     | Minus
     | Plus

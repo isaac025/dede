@@ -92,6 +92,7 @@ scanToken = do
         '{' -> addToken LBrace
         '}' -> addToken RBrace
         ',' -> addToken Comma
+        '^' -> addToken Caret
         '.' -> addToken Dot
         '-' -> addToken Minus
         '+' -> addToken Plus
