@@ -1,13 +1,11 @@
 module Main where
 
 import Control.Monad (guard, unless)
-import Data.Text.IO (getLine, readFile)
 import Parser
 import Scanner
 import System.Environment (getArgs)
 import System.Exit (exitFailure, exitSuccess)
 import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
-import Prelude hiding (getLine, readFile)
 
 main :: IO ()
 main = do

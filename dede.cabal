@@ -24,14 +24,12 @@ executable dede
         Parser
         Interpreter
     default-extensions:
-        OverloadedStrings
         RecordWildCards
         NamedFieldPuns
         GeneralizedNewtypeDeriving
         MultiWayIf
         TypeApplications
     build-depends:    base ^>=4.17.2.1
-                    , text
                     , mtl
                     , containers
                     , cond

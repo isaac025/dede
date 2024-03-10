@@ -5,7 +5,6 @@ import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.State
 import Data.Set (fromList)
-import Data.Text (unpack)
 import Syntax
 import Token
 
@@ -111,7 +110,7 @@ factor :: ParserM Expr
 factor = unary >>= loop
   where
     loop e = do
-        b <- match [Slash, Star, And]
+        b <- match [Caret, Slash, Star, And]
         if b
             then do
                 op <- tType <$> previous
@@ -140,7 +139,7 @@ primary =
 
 buildNumber :: ParserM Expr
 buildNumber = do
-    p <- unpack . tLexeme <$> previous
+    p <- tLexeme <$> previous
     ifM
         (match [Percent])
         (buildRatio p)
@@ -151,7 +150,7 @@ buildNumber = do
             then pure $ Lit (LDouble (read @Double v))
             else pure $ Lit (LInt (read @Integer v))
     buildRatio v = do
-        w <- unpack . tLexeme <$> advance
+        w <- tLexeme <$> advance
         pure $ Lit (LRatio (read @Rational (v ++ " % " ++ w)))
 buildSet :: ParserM Expr
 buildSet = do

@@ -6,19 +6,17 @@ import Control.Monad.Identity
 import Control.Monad.State
 import Data.Char (isAlpha, isAlphaNum, isDigit)
 import Data.Maybe (fromMaybe)
-import Data.Text (Text, append, drop, index, length, pack, take)
 import Token
-import Prelude hiding (drop, length, take)
 
 data ScanError = ScanError
     { seLine :: Int
-    , seMsg :: Text
+    , seMsg :: String
     }
 
 type ScannerT a = ExceptT ScanError (StateT Scanner Identity) a
 
 data Scanner = Scanner
-    { sSource :: Text
+    { sSource :: String
     , sTokens :: [Token]
     , sStart :: Int
     , sCurrent :: Int
@@ -34,11 +32,11 @@ runScan :: Scanner -> ScanM a -> (Either ScanError a, Scanner)
 runScan st s = runIdentity $ runStateT (runExceptT (runScanM s)) st
 
 printError :: ScanError -> IO ()
-printError (ScanError{..}) = print $ "[line " `append` line `append` "] Error: " `append` seMsg
+printError (ScanError{..}) = print $ "[line " ++ line ++ "] Error: " ++ seMsg
   where
-    line = pack $ show seLine
+    line = show seLine
 
-type SymTable = [(Text, TokenType)]
+type SymTable = [(String, TokenType)]
 
 keywords :: SymTable
 keywords =
@@ -60,7 +58,7 @@ keywords =
     , ("while", While)
     ]
 
-initScanner :: Text -> Scanner
+initScanner :: String -> Scanner
 initScanner s = Scanner s [] 0 0 1 False
 
 scanTokens :: ScanM ()
@@ -99,13 +97,13 @@ scanToken = do
         '%' -> addToken Percent
         ';' -> addToken SemiColon
         '*' -> addToken Star
+        '#' -> scanComment
         '=' -> ifM (match '>') (addToken EqGreater) (addToken Eq)
         '~' -> addToken Tilde
         '/' -> ifM (match '=') (addToken SlashEq) (addToken Slash)
         ':' -> ifM (match '=') (addToken ColonEq) (addToken Colon)
         '>' -> ifM (match '=') (addToken GreaterEq) (addToken Greater)
         '<' -> ifM (match '=') (addToken LessEq) (addToken Less)
-        '#' -> scanComment
         ' ' -> pure ()
         '\t' -> pure ()
         '\n' -> void incLine
@@ -117,13 +115,13 @@ scanToken = do
                 ]
 
 unexpectedChar :: Char -> ScanM Token
-unexpectedChar c = get >>= \s -> throwError $ ScanError (sLine s) ("Unexpected character: " `append` pack ['\'', c, '\''])
+unexpectedChar c = get >>= \s -> throwError $ ScanError (sLine s) ("Unexpected character: " ++ ['\'', c, '\''])
 
 advance :: ScanM Char
 advance = do
     Scanner{..} <- get
     put (Scanner{sSource, sTokens, sStart, sCurrent = sCurrent + 1, sLine, hasError})
-    pure (sSource `index` sCurrent)
+    pure (sSource !! sCurrent)
 
 addToken :: TokenType -> ScanM ()
 addToken tt = do
@@ -132,7 +130,7 @@ addToken tt = do
         newToken = Token{tType = tt, tLexeme = text, tLine = sLine}
     put $ Scanner{sSource, sTokens = sTokens ++ [newToken], sStart, sCurrent, sLine, hasError}
 
-substring :: Int -> Int -> Text -> Text
+substring :: Int -> Int -> String -> String
 substring a b = take (b - a) . drop a
 
 match :: Char -> ScanM Bool
@@ -141,7 +139,7 @@ match expected = do
     Scanner{..} <- get
     if
         | b -> pure False
-        | sSource `index` sCurrent /= expected -> pure False
+        | sSource !! sCurrent /= expected -> pure False
         | otherwise -> incLine >> pure True
 
 incLine :: ScanM ()
@@ -161,12 +159,12 @@ peek :: ScanM Char
 peek = do
     b <- isAtEnd
     Scanner{..} <- get
-    if b then pure '\0' else pure (sSource `index` sCurrent)
+    if b then pure '\0' else pure (sSource !! sCurrent)
 
 peekNext :: ScanM Char
 peekNext = do
     Scanner{..} <- get
-    if sCurrent + 1 >= length sSource then pure '\0' else pure $ sSource `index` (sCurrent + 1)
+    if sCurrent + 1 >= length sSource then pure '\0' else pure $ sSource !! (sCurrent + 1)
 
 munchChars :: (Char -> Bool) -> ScanM ()
 munchChars p = do
