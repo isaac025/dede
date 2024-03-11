@@ -1,7 +1,29 @@
 module Interpreter where
 
 import Syntax
+import Token
 
+isTruthy :: Literal -> Bool
+isTruthy (LBool _) = True
+isTruthy _ = False
+
+visit :: Expr -> Literal
+visit (Binary e1 op e2) = visitBinary
+visit (Unary op e) = visitUnary op (visit e)
+visit (Lit l) = l
+
+visitUnary :: TokenType -> Literal -> Literal
+visitUnary op e =
+    case op of
+        Minus -> neg e
+
+neg :: Literal -> Literal
+neg (LInt l) = LInt (negate l)
+neg (LDouble l) = LDouble (negate l)
+neg (LRatio l) = LRatio (negate l)
+neg _ = error "not a number"
+
+{-
 isVariable :: Expr -> Bool
 isVariable = undefined
 
@@ -31,3 +53,4 @@ makeProduct = undefined
 
 deriv :: Expr -> String -> Expr
 deriv = undefined
+-}
