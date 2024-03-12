@@ -21,6 +21,7 @@ data TokenType
     | Colon
     | ColonEq
     | Slash
+    | SlashSlash
     | SlashEq
     | Greater
     | GreaterEq

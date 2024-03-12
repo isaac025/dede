@@ -1,6 +1,6 @@
 module Scanner (runScan, scanTokens, initScanner, Scanner (..)) where
 
-import Control.Conditional (cond, ifM)
+import Control.Conditional (cond, condM, ifM)
 import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.State
@@ -100,7 +100,12 @@ scanToken = do
         '#' -> scanComment
         '=' -> ifM (match '>') (addToken EqGreater) (addToken Eq)
         '~' -> addToken Tilde
-        '/' -> ifM (match '=') (addToken SlashEq) (addToken Slash)
+        '/' ->
+            condM
+                [ (match '=', addToken SlashEq)
+                , (match '/', addToken SlashSlash)
+                , (pure otherwise, addToken Slash)
+                ]
         ':' -> ifM (match '=') (addToken ColonEq) (addToken Colon)
         '>' -> ifM (match '=') (addToken GreaterEq) (addToken Greater)
         '<' -> ifM (match '=') (addToken LessEq) (addToken Less)

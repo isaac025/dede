@@ -8,6 +8,7 @@ data Expr
     = Binary Expr TokenType Expr
     | Unary TokenType Expr
     | Lit Literal
+    deriving (Eq)
 
 instance Show Expr where
     show (Binary e1 op e2) = show e1 ++ " " ++ show op ++ " " ++ show e2
